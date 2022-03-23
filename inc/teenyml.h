@@ -12,19 +12,35 @@
 
 #define auto __auto_type
 
-#define OVERLOADABLE __attribute__((overloadable))
-#define CONST __attribute((const))
-#define PURE __attribute((pure))
-#define TEENYML_EXPORT OVERLOADABLE static inline
+//#define OVERLOADABLE __attribute__((overloadable))
+//#define CONST __attribute__((const))
+//#define PURE __attribute__((pure))
+//#define TEENYML_EXPORT OVERLOADABLE static inline
+
+#define OVERLOADABLE
+#define CONST
+#define PURE
+#define TEENYML_EXPORT
 
 #define bail(...) do{printf("bailed at %d:%s:%s\n",__LINE__,__FUNCTION__,__FILE__);\
 printf(__VA_ARGS__); exit(1);} while(0)
 
+// Make a FOREACH macro
+#define FE_0(WHAT)
+#define FE_1(WHAT, X) WHAT(X) 
+#define FE_2(WHAT, X, ...) WHAT(X)FE_1(WHAT, __VA_ARGS__)
+#define FE_3(WHAT, X, ...) WHAT(X)FE_2(WHAT, __VA_ARGS__)
+#define FE_4(WHAT, X, ...) WHAT(X)FE_3(WHAT, __VA_ARGS__)
+#define FE_5(WHAT, X, ...) WHAT(X)FE_4(WHAT, __VA_ARGS__)
+//... repeat as needed
 
-//#define P99_FOR(NAME, N, OP, FUNC, ...)
-#define P00_SEP(NAME, I, REC, RES) REC; RES
-#define P00_VASSIGN(NAME, X, I) X = (NAME)[I]
-#define MYASSIGN(NAME, ...) P99_FOR(NAME, P99_NARG(__VA_ARGS__), P00_SEP, P00_VASSIGN, __VA_ARGS__)
+#define GET_MACRO(_0,_1,_2,_3,_4,_5,NAME,...) NAME 
+#define FOR_EACH(action,...) \
+  GET_MACRO(_0,__VA_ARGS__,FE_5,FE_4,FE_3,FE_2,FE_1,FE_0)(action,__VA_ARGS__)
+
+
+#define S32IFY(X)   s32 X 
+
 
 
 typedef uint8_t u8;
@@ -51,7 +67,7 @@ typedef union vecbase_t {
       s32 raw[rank_]; \
       struct {s32 __VA_ARGS__;}; \
     } dims##rank_##_t; \
-    TEENYML_EXPORT CONST dims##rank_##_t dims##rank_## (MYASSIGN(s32,__VA_ARGS__ )){} \
+    TEENYML_EXPORT CONST dims##rank_##_t dims##rank_## (FOR_EACH(S32IFY, __VA_ARGS__ )){} \
     TEENYML_EXPORT CONST s32 rank(dims##rank_##_t dims){ return rank_; } \
     TEENYML_EXPORT CONST s32 idx(dims##rank_##_t dims, dims##rank_##_t idx){ s32 i = 0, sz = 1; for(s32 _ = rank_ - 1; _ >= 0; _--) {i += idx.raw[_]*sz; sz*=dims.raw[_];} return i;}
 
@@ -83,7 +99,7 @@ TEENYML_EXPORT CONST s32 rank(tensorbase_t  t) {
     TEENYML_EXPORT CONST s32 rank(tensor##rank_##_##type_##_t t){ return rank_; } \
     TEENYML_EXPORT CONST s32 at(tensor##rank_##_##type_##_t t, dims##rank_##_t d) { return 0; }
 
-TENSOR_TYPE_GEN(u32, 3)
+TENSOR_TYPE_GEN(u32, 2)
 
 
 
