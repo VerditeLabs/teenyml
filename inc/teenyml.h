@@ -20,6 +20,13 @@
 #define bail(...) do{printf("bailed at %d:%s:%s\n",__LINE__,__FUNCTION__,__FILE__);\
 printf(__VA_ARGS__); exit(1);} while(0)
 
+
+//#define P99_FOR(NAME, N, OP, FUNC, ...)
+#define P00_SEP(NAME, I, REC, RES) REC; RES
+#define P00_VASSIGN(NAME, X, I) X = (NAME)[I]
+#define MYASSIGN(NAME, ...) P99_FOR(NAME, P99_NARG(__VA_ARGS__), P00_SEP, P00_VASSIGN, __VA_ARGS__)
+
+
 typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
@@ -34,6 +41,28 @@ typedef __int128 s128;
 
 typedef float f32;
 typedef double f64;
+
+typedef union vecbase_t {
+    s32 raw[1];
+}vecbase_t;
+
+#define DIMS_TYPE_GEN(rank_, ...)     \
+    typedef union dims##rank_##_t { \
+      s32 raw[rank_]; \
+      struct {s32 __VA_ARGS__;}; \
+    } dims##rank_##_t; \
+    TEENYML_EXPORT CONST dims##rank_##_t dims##rank_## (MYASSIGN(s32,__VA_ARGS__ )){} \
+    TEENYML_EXPORT CONST s32 rank(dims##rank_##_t dims){ return rank_; } \
+    TEENYML_EXPORT CONST s32 idx(dims##rank_##_t dims, dims##rank_##_t idx){ s32 i = 0, sz = 1; for(s32 _ = rank_ - 1; _ >= 0; _--) {i += idx.raw[_]*sz; sz*=dims.raw[_];} return i;}
+
+DIMS_TYPE_GEN(1, x)
+DIMS_TYPE_GEN(2, x, y)
+DIMS_TYPE_GEN(3, x, y, z)
+DIMS_TYPE_GEN(4, x, y, z, w)
+DIMS_TYPE_GEN(5, x, y, z, w, i)
+DIMS_TYPE_GEN(6, x, y, z, w, i, j)
+DIMS_TYPE_GEN(7, x, y, z, w, i, j, k)
+DIMS_TYPE_GEN(8, x, y, z, w, i, j, k, l)
 
 typedef struct tensorbase_t {
     u64 tag;
@@ -51,7 +80,8 @@ TEENYML_EXPORT CONST s32 rank(tensorbase_t  t) {
       s32 rank;                         \
       type_* data;                       \
     }tensor##rank_##_##type_##_t; \
-    TEENYML_EXPORT CONST s32 rank(tensor##rank_##_##type_##_t t){ return rank_; }
+    TEENYML_EXPORT CONST s32 rank(tensor##rank_##_##type_##_t t){ return rank_; } \
+    TEENYML_EXPORT CONST s32 at(tensor##rank_##_##type_##_t t, dims##rank_##_t d) { return 0; }
 
 TENSOR_TYPE_GEN(u32, 3)
 

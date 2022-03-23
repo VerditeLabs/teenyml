@@ -1,0 +1,7 @@
+[submodule "3rdparty/hedley"]
+	path = 3rdparty/hedley
+	url = https://github.com/nemequ/hedley.git
+[submodule "3rdparty/munit"]
+	path = 3rdparty/munit
+	url = https://github.com/nemequ/munit.git
+
