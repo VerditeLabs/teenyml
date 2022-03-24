@@ -9,7 +9,7 @@ static MunitResult test_teenyml_dims(const MunitParameter params[], void* user_d
   for (int i = 0; i < extent.x; i++) {
     for (int j = 0; j < extent.y; j++) {
       for (int k = 0; k < extent.z; k++) {
-        auto idx = tml_dims3(ANON_ARRAY(s32, 3, 3, 6, 9));
+        auto idx = tml_dims3(ANON_ARRAY(s32, 3, i,j,k));
         printf("%d\n", tml_idx(extent, idx));
       }
     }
