@@ -41,18 +41,27 @@ typedef __int128 s128;
 typedef float f32;
 typedef double f64;
 
-typedef union tml_vecbase_t {
-  s32 raw[1];
-} tml_vecbase_t;
 
 #define DIMS_TYPE_GEN(rank_, ...) \
   typedef union tml_dims##rank_##_t { \
     s32 raw[rank_]; \
     struct {s32 __VA_ARGS__;}; \
   } tml_dims##rank_##_t; \
-  TEENYML_EXPORT tml_dims##rank_##_t tml_dims##rank_ (s32 dims[static rank_]){ tml_dims##rank_##_t ret; memcpy(ret.raw,dims,rank_ * sizeof(rank_)); return ret;} \
+  TEENYML_EXPORT tml_dims##rank_##_t tml_dims##rank_ (s32 dims[static rank_]){ \
+    tml_dims##rank_##_t ret; memcpy(ret.raw,dims,rank_ * sizeof(rank_)); return ret;} \
   TEENYML_EXPORT s32 tml_rank(tml_dims##rank_##_t dims){ return rank_; } \
-  TEENYML_EXPORT s32 tml_idx(tml_dims##rank_##_t extent, tml_dims##rank_##_t idx){ s32 i = 0, sz = 1; for(s32 _ = rank_ - 1; _ >= 0; _--) {i += idx.raw[_]*sz; sz*=extent.raw[_];} return i;}
+  TEENYML_EXPORT s32 tml_idx(tml_dims##rank_##_t extent, tml_dims##rank_##_t idx){ \
+    s32 i = 0, sz = 1; \
+    for(s32 _ = rank_ - 1; _ >= 0; _--) {\
+      i += idx.raw[_]*sz; sz*=extent.raw[_]; \
+    } \
+    return i;\
+  } \
+  TEENYML_EXPORT s32 tml_dims2len(tml_dims##rank_##_t dims) { \
+    s32 ret = 1; \
+    for(int i = 0; i < rank_; i++) ret*= dims.raw[i]; \
+    return ret; \
+  }
 
 DIMS_TYPE_GEN(1, x)
 DIMS_TYPE_GEN(2, x, y)
@@ -66,7 +75,8 @@ DIMS_TYPE_GEN(8, x, y, z, w, i, j, k, l)
 typedef struct tml_tensorbase_t {
   u64 tag;
   s32 rank;
-  void* data;
+  s32 len;
+  u8 data[];
 } tml_tensorbase_t;
 
 TEENYML_EXPORT s32 tml_rank(tml_tensorbase_t  t) {
@@ -78,10 +88,16 @@ TEENYML_EXPORT s32 tml_rank(tml_tensorbase_t  t) {
     u64 tag;              \
     s32 rank;             \
     s32 len; \
+    tml_dims##rank_##_t extent; \
     type_ data[];             \
   }tml_tensor##rank_##_##type_##_t; \
-  TEENYML_EXPORT s32 tml_rank(tml_tensor##rank_##_##type_##_t t){ return rank_; } \
-  TEENYML_EXPORT s32 tml_at(tml_tensor##rank_##_##type_##_t t, tml_dims##rank_##_t d) { return 0; }
+  TEENYML_EXPORT tml_tensor##rank_##_##type_##_t* tml_tensor##rank_##_##type_(tml_dims##rank_##_t extent){\
+    tml_tensor##rank_##_##type_##_t* ret = malloc(sizeof(tml_tensor##rank_##_##type_##_t) + tml_dims2len(extent)*sizeof(type_));\
+    return ret; \
+  } \
+  TEENYML_EXPORT s32 tml_rank(tml_tensor##rank_##_##type_##_t tensor){ return rank_; } \
+  TEENYML_EXPORT type_ tml_get(tml_tensor##rank_##_##type_##_t tensor, tml_dims##rank_##_t idx) { return tensor.data[tml_idx(tensor.extent, idx)]; }\
+  TEENYML_EXPORT void tml_set(tml_tensor##rank_##_##type_##_t tensor, tml_dims##rank_##_t idx, type_ data) { tensor.data[tml_idx(tensor.extent, idx)] = data; }
 
 TENSOR_TYPE_GEN(u8, 1)
 TENSOR_TYPE_GEN(u8, 2)
