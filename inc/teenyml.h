@@ -48,7 +48,7 @@ typedef double f64;
     struct {s32 __VA_ARGS__;}; \
   } tml_dims##rank_##_t; \
   TEENYML_EXPORT tml_dims##rank_##_t tml_dims##rank_ (s32 dims[static rank_]){ \
-    tml_dims##rank_##_t ret; memcpy(ret.raw,dims,rank_ * sizeof(rank_)); return ret;} \
+    tml_dims##rank_##_t ret; memcpy(ret.raw,dims,rank_ * sizeof(s32)); return ret;} \
   TEENYML_EXPORT s32 tml_rank(tml_dims##rank_##_t dims){ return rank_; } \
   TEENYML_EXPORT s32 tml_idx(tml_dims##rank_##_t extent, tml_dims##rank_##_t idx){ \
     s32 i = 0, sz = 1; \
