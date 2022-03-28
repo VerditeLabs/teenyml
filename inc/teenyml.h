@@ -61,6 +61,9 @@ typedef double f64;
   TEENYML_EXPORT tml_dims##rank_##_t tml_dims##rank_ (s32 dims[static rank_]){ \
     tml_dims##rank_##_t ret; memcpy(ret.raw,dims,rank_ * sizeof(s32)); return ret;\
   } \
+  TEENYML_EXPORT tml_dims##rank_##_t tml_dims##rank_ (tml_dims##rank_##_t dims){ \
+    tml_dims##rank_##_t ret; memcpy(ret.raw,dims.raw,rank_ * sizeof(s32)); return ret;\
+  } \
   TEENYML_EXPORT s32 tml_rank(tml_dims##rank_##_t dims){ return rank_; } \
   TEENYML_EXPORT s32 tml_idx(tml_dims##rank_##_t extent, tml_dims##rank_##_t idx){ \
     s32 i = 0, sz = 1; \
@@ -70,12 +73,13 @@ typedef double f64;
     return i;\
   }                               \
   TEENYML_EXPORT tml_dims##rank_##_t tml_idx(tml_dims##rank_##_t extent, s32 idx){\
-    tml_dims##rank_##_t ret;                              \
-    s32 i = 0, sz = 1; \
+    s32 _ret[rank_] = {0};                              \
+    s32 sz = 1; \
     for(s32 _ = rank_ - 1; _ >= 0; _--) {\
-      i += idx.raw[_]*sz; sz*=extent.raw[_]; \
+      sz*=extent.raw[_]; \ 
+      _ret[_] = idx % sz; \
     } \
-    return i;\
+    return tml_dims##rank_(_ret); \
   } \
   TEENYML_EXPORT s32 tml_dims2len(tml_dims##rank_##_t dims) { \
     s32 ret = 1; \
