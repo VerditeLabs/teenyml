@@ -8,7 +8,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 
+#include <hedley.h>
 
 #define auto __auto_type
 
@@ -16,11 +18,6 @@
 #define CONST __attribute__((const))
 #define PURE __attribute__((pure))
 #define TEENYML_EXPORT OVERLOADABLE static inline
-
-//#define OVERLOADABLE
-//#define CONST
-//#define PURE
-//#define TEENYML_EXPORT
 
 #define ANON_ARRAY(t, n, ...) (t[n]){__VA_ARGS__}
 
@@ -41,6 +38,20 @@ typedef __int128 s128;
 typedef float f32;
 typedef double f64;
 
+#define TYPENAME(x) _Generic((x), \
+  u8: "u8", u16: "u16", u32: "u32", u64: "u64", u128: "u128", \
+  s8: "s8", s16: "s16", s32: "s32", s64: "s64", s128: "s128", \
+  f32: "f32", f64: "f64")
+
+#define ZERO(x)  _Generic((x), \
+  u8: 0, u16: 0, u32: 0, u64: 0, u128: 0, \
+  s8: 0, s16: 0, s32: 0, s64: 0, s128: 0, \
+  f32: 0.0f, f64: 0.0)
+
+#define ONE(x)  _Generic((x), \
+  u8: 1, u16: 1, u32: 1, u64: 1, u128: 1, \
+  s8: 1, s16: 1, s32: 1, s64: 1, s128: 1, \
+  f32: 1.0f, f64: 1.0)
 
 #define DIMS_TYPE_GEN(rank_, ...) \
   typedef union tml_dims##rank_##_t { \
@@ -48,9 +59,18 @@ typedef double f64;
     struct {s32 __VA_ARGS__;}; \
   } tml_dims##rank_##_t; \
   TEENYML_EXPORT tml_dims##rank_##_t tml_dims##rank_ (s32 dims[static rank_]){ \
-    tml_dims##rank_##_t ret; memcpy(ret.raw,dims,rank_ * sizeof(s32)); return ret;} \
+    tml_dims##rank_##_t ret; memcpy(ret.raw,dims,rank_ * sizeof(s32)); return ret;\
+  } \
   TEENYML_EXPORT s32 tml_rank(tml_dims##rank_##_t dims){ return rank_; } \
   TEENYML_EXPORT s32 tml_idx(tml_dims##rank_##_t extent, tml_dims##rank_##_t idx){ \
+    s32 i = 0, sz = 1; \
+    for(s32 _ = rank_ - 1; _ >= 0; _--) {\
+      i += idx.raw[_]*sz; sz*=extent.raw[_]; \
+    } \
+    return i;\
+  }                               \
+  TEENYML_EXPORT tml_dims##rank_##_t tml_idx(tml_dims##rank_##_t extent, s32 idx){\
+    tml_dims##rank_##_t ret;                              \
     s32 i = 0, sz = 1; \
     for(s32 _ = rank_ - 1; _ >= 0; _--) {\
       i += idx.raw[_]*sz; sz*=extent.raw[_]; \
