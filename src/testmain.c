@@ -20,6 +20,23 @@ static MunitResult test_teenyml_dims(const MunitParameter params[], void* user_d
   return MUNIT_OK;
 }
 
+
+static MunitResult test_teenyml_tensor(const MunitParameter params[], void* user_data) {
+  auto extent = tml_dims3(ANON_ARRAY(s32, 3, 3, 6, 9));
+  auto tensor = tml_tensor3_f32(extent);
+  for (int i = 0; i < extent.x; i++) {
+    for (int j = 0; j < extent.y; j++) {
+      for (int k = 0; k < extent.z; k++) {
+        auto idx = tml_dims3(ANON_ARRAY(s32, 3, i, j, k));
+        printf("%d\n", tml_idx(extent, idx));
+        auto idx2 = tml_dims3(idx);
+        printf("%d %d %d\n", idx.x, idx.y, idx.z);
+      }
+    }
+  }
+  return MUNIT_OK;
+}
+
 static MunitTest teenyml_tests[] = {
   { (char*)"/teenyml", test_teenyml_dims, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
   { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL }
