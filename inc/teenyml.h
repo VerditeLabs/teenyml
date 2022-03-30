@@ -122,11 +122,20 @@ DIMS_TYPE_GEN(8, x, y, z, w, i, j, k, l)
   TEENYML_EXPORT void tml_set(tml_tensor##rank_##_##type_##_t* tensor, s32 idx, type_ data) { tensor->data[idx] = data; } \
   TEENYML_EXPORT void tml_fill(tml_tensor##rank_##_##type_##_t* tensor, tml_fill_type_e fill) {\
     switch (fill) {\
-    case FILL_TYPE_ZERO:for (int _ = 0; _ < tml_dims2len(tensor->extent); _++) { tml_set(tensor, _, ZERO(tensor->data[0])); } break; \
-    case FILL_TYPE_ONES:for (int _ = 0; _ < tml_dims2len(tensor->extent); _++) { tml_set(tensor, _, ONE(tensor->data[0])); } break; \
-    case FILL_TYPE_INC:break; \
-    case FILL_TYPE_DEC:break; \
+    case FILL_TYPE_ZERO:for (int _ = 0; _ < tml_dims2len(tensor->extent); _++) { \
+      tml_set(tensor, _, ZERO(tensor->data[0])); \
+    } break; \
+    case FILL_TYPE_ONES:for (int _ = 0; _ < tml_dims2len(tensor->extent); _++) { \
+      tml_set(tensor, _, ONE(tensor->data[0])); \
+    } break; \
+    case FILL_TYPE_INC: for (int _ = 0; _ < tml_dims2len(tensor->extent); _++) { \
+      tml_set(tensor, _, (type_)_); \
+    } break; \
+    case FILL_TYPE_DEC: for (int _ = 0; _ < tml_dims2len(tensor->extent); _++) { \
+      tml_set(tensor, _, ZERO(tensor->data[0]) - (type_)_); \
+    }break; \
     case FILL_TYPE_RAND:break; \
+    default: bail("invalid fill type"); break; \
     } \
   }
 
@@ -213,6 +222,7 @@ TENSOR_TYPE_GEN(f64, 6)
 TENSOR_TYPE_GEN(f64, 7)
 TENSOR_TYPE_GEN(f64, 8)
 
-
+#define OP_GEN(type_) \
+  void 
 
 #endif //DEFINED_TEENYML_H
