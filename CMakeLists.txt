@@ -11,7 +11,7 @@ add_library(teenyml "src/teenyml.c"  "inc/teenyml.h")
 set_property(TARGET teenyml PROPERTY C_STANDARD 11)
 
 target_include_directories(teenyml PUBLIC "inc" "3rdparty/hedley" "3rdparty/p99/p99")
-target_compile_options(teenyml PUBLIC -Weverything -w)
+target_compile_options(teenyml PUBLIC -Weverything -w -fwrapv -fPIE)
 
 add_executable(teenyml_test "3rdparty/munit/munit.c" "src/testmain.c")
 
